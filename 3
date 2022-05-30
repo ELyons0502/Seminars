@@ -1,0 +1,196 @@
+Regression trees and classification treees
+# We use classification when the target variable is binary
+​
+#Tree based methods involve stratifying or segmenting the predictors space into a number of single regions
+​
+# In a tree, we split regions based on categorical thresholds (nodes), whh produces two results per split/branch (leaves)
+# i.e., split by age, then split by gender etc...
+​
+# To build a regression tree, we:
+    # divide the predictor space into non-overlapping regions (nodes)
+    # For every observation that falls into space, we find mean for the training observation 
+    # The model tries to split in a way that minimises the resiudla sum of squares
+        # i.e., is of more accurate predictive strength 
+​
+# To prevent overfitting, we may "prune" the tree
+    # This is achieved by setting an alpha that minimises MSE in crossvalidation of training vs testig data
+import pandas as pd 
+​
+df = pd.read_csv('C:/Users/ELyons/Data/LoansData2.csv')
+​
+df.columns
+​
+Index(['loan_amnt', 'int_rate', 'installment', 'annual_inc', 'loan_status',
+       'dti', 'open_acc', 'revol_bal', 'revol_util', 'total_acc',
+       'total_pymnt', 'total_rec_prncp', 'total_rec_int', 'last_pymnt_amnt',
+       'tot_coll_amt', 'tot_cur_bal', 'total_rev_hi_lim', 'grade'],
+      dtype='object')
+df.head(10)
+loan_amnt	int_rate	installment	annual_inc	loan_status	dti	open_acc	revol_bal	revol_util	total_acc	total_pymnt	total_rec_prncp	total_rec_int	last_pymnt_amnt	tot_coll_amt	tot_cur_bal	total_rev_hi_lim	grade
+0	18600	10.99	608.86	80000.00	Fully Paid	12.92	8.0	13999	67.6	14.0	19955.750000	18600.00	1355.75	15705.09	0.0	170238.0	20700.0	B
+1	2000	17.97	72.28	55400.00	Current	10.62	10.0	6524	60.4	53.0	212.850000	128.90	83.95	72.28	74.0	351452.0	10800.0	D
+2	12000	12.29	400.24	60000.00	Fully Paid	17.92	14.0	14670	71.2	31.0	12485.960000	12000.00	485.96	11281.15	0.0	18207.0	20600.0	C
+3	16000	19.42	589.90	64000.00	Current	3.90	5.0	7644	98.0	9.0	5864.480000	3561.40	2303.08	589.90	0.0	12293.0	7800.0	D
+4	22525	16.02	548.01	94080.00	Fully Paid	19.08	15.0	20447	38.0	31.0	24751.116850	22525.00	2226.12	21483.11	250.0	571244.0	53800.0	C
+5	19000	16.99	472.10	65000.00	Charged Off	15.66	10.0	3557	14.5	21.0	4678.310000	1262.50	1552.17	472.10	234.0	13167.0	24600.0	D
+6	6000	9.17	191.28	147000.00	Fully Paid	4.00	8.0	2686	21.7	15.0	6848.799795	6000.00	848.80	152.92	381.0	2686.0	12400.0	B
+7	17000	5.32	511.96	75000.00	Current	7.89	8.0	195	0.4	29.0	7674.380000	6756.09	918.29	511.96	0.0	191633.0	45700.0	A
+8	26375	24.50	766.43	71596.18	Fully Paid	22.59	16.0	12408	62.4	18.0	42784.289280	26375.00	16409.29	14426.38	510.0	273060.0	19900.0	F
+9	10000	18.45	256.39	48000.00	Current	28.03	33.0	5862	15.4	55.0	2810.040000	1219.96	1590.08	256.39	0.0	132034.0	38100.0	D
+We need to transform loan status into a binary dummy variable
+
+df_copy = df.copy()
+df_copy = pd.get_dummies(df_copy, columns=['loan_status'])
+​
+df_copy.head(10)
+loan_amnt	int_rate	installment	annual_inc	dti	open_acc	revol_bal	revol_util	total_acc	total_pymnt	...	grade	loan_status_Charged Off	loan_status_Current	loan_status_Default	loan_status_Does not meet the credit policy. Status:Charged Off	loan_status_Does not meet the credit policy. Status:Fully Paid	loan_status_Fully Paid	loan_status_In Grace Period	loan_status_Late (16-30 days)	loan_status_Late (31-120 days)
+0	18600	10.99	608.86	80000.00	12.92	8.0	13999	67.6	14.0	19955.750000	...	B	0	0	0	0	0	1	0	0	0
+1	2000	17.97	72.28	55400.00	10.62	10.0	6524	60.4	53.0	212.850000	...	D	0	1	0	0	0	0	0	0	0
+2	12000	12.29	400.24	60000.00	17.92	14.0	14670	71.2	31.0	12485.960000	...	C	0	0	0	0	0	1	0	0	0
+3	16000	19.42	589.90	64000.00	3.90	5.0	7644	98.0	9.0	5864.480000	...	D	0	1	0	0	0	0	0	0	0
+4	22525	16.02	548.01	94080.00	19.08	15.0	20447	38.0	31.0	24751.116850	...	C	0	0	0	0	0	1	0	0	0
+5	19000	16.99	472.10	65000.00	15.66	10.0	3557	14.5	21.0	4678.310000	...	D	1	0	0	0	0	0	0	0	0
+6	6000	9.17	191.28	147000.00	4.00	8.0	2686	21.7	15.0	6848.799795	...	B	0	0	0	0	0	1	0	0	0
+7	17000	5.32	511.96	75000.00	7.89	8.0	195	0.4	29.0	7674.380000	...	A	0	1	0	0	0	0	0	0	0
+8	26375	24.50	766.43	71596.18	22.59	16.0	12408	62.4	18.0	42784.289280	...	F	0	0	0	0	0	1	0	0	0
+9	10000	18.45	256.39	48000.00	28.03	33.0	5862	15.4	55.0	2810.040000	...	D	0	1	0	0	0	0	0	0	0
+10 rows × 26 columns
+
+# let's rename charged off to default
+​
+df_copy.rename(columns={'loan_status_Charged Off':'default'}, inplace=True)
+df_copy.head(10)
+loan_amnt	int_rate	installment	annual_inc	dti	open_acc	revol_bal	revol_util	total_acc	total_pymnt	...	grade	default	loan_status_Current	loan_status_Default	loan_status_Does not meet the credit policy. Status:Charged Off	loan_status_Does not meet the credit policy. Status:Fully Paid	loan_status_Fully Paid	loan_status_In Grace Period	loan_status_Late (16-30 days)	loan_status_Late (31-120 days)
+0	18600	10.99	608.86	80000.00	12.92	8.0	13999	67.6	14.0	19955.750000	...	B	0	0	0	0	0	1	0	0	0
+1	2000	17.97	72.28	55400.00	10.62	10.0	6524	60.4	53.0	212.850000	...	D	0	1	0	0	0	0	0	0	0
+2	12000	12.29	400.24	60000.00	17.92	14.0	14670	71.2	31.0	12485.960000	...	C	0	0	0	0	0	1	0	0	0
+3	16000	19.42	589.90	64000.00	3.90	5.0	7644	98.0	9.0	5864.480000	...	D	0	1	0	0	0	0	0	0	0
+4	22525	16.02	548.01	94080.00	19.08	15.0	20447	38.0	31.0	24751.116850	...	C	0	0	0	0	0	1	0	0	0
+5	19000	16.99	472.10	65000.00	15.66	10.0	3557	14.5	21.0	4678.310000	...	D	1	0	0	0	0	0	0	0	0
+6	6000	9.17	191.28	147000.00	4.00	8.0	2686	21.7	15.0	6848.799795	...	B	0	0	0	0	0	1	0	0	0
+7	17000	5.32	511.96	75000.00	7.89	8.0	195	0.4	29.0	7674.380000	...	A	0	1	0	0	0	0	0	0	0
+8	26375	24.50	766.43	71596.18	22.59	16.0	12408	62.4	18.0	42784.289280	...	F	0	0	0	0	0	1	0	0	0
+9	10000	18.45	256.39	48000.00	28.03	33.0	5862	15.4	55.0	2810.040000	...	D	0	1	0	0	0	0	0	0	0
+10 rows × 26 columns
+
+Preliminary analysis
+import seaborn as sns
+import matplotlib.pyplot as plt
+​
+fig, axes = plt.subplots(1,2, figsize=(10,6)) # 10 sets width of chart, 6 sets height
+sns.boxplot(ax=axes[0], x="default", y="int_rate", data=df_copy) #box plot to show relationship between IR and def rate
+sns.boxplot(ax=axes[1], x="default", y="loan_amnt", data=df_copy) # box plot to show relationship between loan amount and def
+​
+axes[0].set_title("Interest Rate")
+axes[1].set_title("Loan Amount")
+Text(0.5, 1.0, 'Loan Amount')
+
+The results suggest that higher IR increase P of default; but loan amount is largely not relevant
+
+Forecasting probabilities of loan defaults
+# First, get rid of missing data
+​
+import numpy as np 
+df_copy.replace([np.inf, -np.inf], np.nan, inplace=True) # just saying remove infinity values and make missing data np
+df_copy = df_copy.dropna(axis=0, how="any") # remove ANY na's
+from sklearn.model_selection import train_test_split 
+predictors = df_copy.columns[0:16] # choose 16 predictors from first column
+x= df_copy[predictors]
+y = df_copy['default']
+​
+x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=0.3, random_state=42,stratify =y)
+​
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import mean_squared_error
+​
+dtree = DecisionTreeClassifier(max_depth = 6, max_leaf_nodes=6) # the max depth sets the number of times we split tree
+dtree.fit(x_train, y_train)
+​
+​
+# note, we are setting the parameters for the tree at this point (in terms of splits and depth)
+DecisionTreeClassifier(max_depth=6, max_leaf_nodes=6)
+# generate the predicted probabiltieis from the classification trees
+# NOTE, we use a classification tree rather than regression tree. This is because
+# only the former reveal Pr of value = 1. 
+​
+dt_probs=dtree.predict_proba(x_test)[:,1]
+print(dt_probs)
+[0.09161602 0.38964861 0.09161602 ... 0.1262343  0.38964861 0.00346137]
+This rrepresents the Pr of default for each observation. This sort of analysis does not estimate coefficients or the importance of explanatory vairable, but shows the results for specific observations.
+
+For a decision tree classifier
+dt = DecisionTreeClassifier(max_depth=6, random_state = 42)
+dt.fit(x_train, y_train)
+​
+DecisionTreeClassifier(max_depth=6, random_state=42)
+Now, start on cross-validation (i.e., creating a tree model that minimises MSE)
+
+params_dt={'max_depth':[2,3,4,6,8,10],
+         'min_samples_leaf': [0.5,1,1.5,2,2.5,3,3.5,4]}
+​
+# The max depth is the number of splits
+# The min samples leafss sthe proportion of ????
+from sklearn.model_selection import GridSearchCV 
+​
+dt_cv = GridSearchCV(estimator=dt,
+                    param_grid=params_dt,
+                    scoring='roc_auc',
+                    cv=5,
+                    verbose=1,
+                    n_jobs=1)
+​
+dt_cv.fit(x_train, y_train)
+​
+y_pred_dt=dt_cv.predict(x_test)
+​
+# this is standard, just follow
+best_model = dt_cv.best_estimator_
+print(best_model)
+# This shows us that bets model for minimising MSE is depth 10, min samples leaf = 4
+To reflect performance of "best model"
+dt_probs = dt.predict_proba(x_test)[:,1]
+dt_cv_probs = dt_cv.predict_proba(x_test)[:,1]
+​
+ns_probs = [0 for _ in range(len(y_test))] # no skilled, i.e., linear counterfactual
+from sklearn.metrics import roc_curve 
+
+import matplotlib.pyplot as plt
+
+#Visualisation of the curves
+ns_fpr, ns_tpr,_ = roc_curve(y_test, ns_probs)
+dt_fpr, dt_tpr,_ = roc_curve(y_test, dt_probs)
+dt_cv_fpr, dt_cv_tpr, _ = roc_curve(y_test, dt_cv_probs)
+
+# Plot the roc curve
+plt.plot(ns_fpr,ns_tpr, linestyle='--', label='No Skill')
+plt.plot(dt_fpr,dt_tpr, marker='.', label='Classification Tree')
+plt.plot(dt_cv_fpr,dt_cv_tpr, marker='.', label='Classification Tree post cross-validation')
+
+# Axis
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+
+plt.legend()
+
+plt.show()
+from sklearn.metrics import roc_curve 
+​
+import matplotlib.pyplot as plt
+​
+#Visualisation of the curves
+ns_fpr, ns_tpr,_ = roc_curve(y_test, ns_probs)
+dt_fpr, dt_tpr,_ = roc_curve(y_test, dt_probs)
+dt_cv_fpr, dt_cv_tpr, _ = roc_curve(y_test, dt_cv_probs)
+​
+# Plot the roc curve
+plt.plot(ns_fpr,ns_tpr, linestyle='--', label='No Skill')
+plt.plot(dt_fpr,dt_tpr, marker='.', label='Classification Tree')
+plt.plot(dt_cv_fpr,dt_cv_tpr, marker='.', label='Classification Tree post cross-validation')
+​
+# Axis
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+​
+plt.legend()
+​
+plt.show()
