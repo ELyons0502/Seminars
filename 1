@@ -1,0 +1,43 @@
+Introduction seminar 1
+mylist = [1,3,5,7,9]
+print(mylist)
+[1, 3, 5, 7, 9]
+mylist[3]
+7
+Note, that first value is classed as element '0', so 1 = 0, 3 = 1...
+
+mylist += [10,11]
+print(mylist)
+[1, 3, 5, 7, 9, 10, 11, 10, 11]
+By using += in conjuction, we add these new string values to initial string.
+
+investment = 100
+interest_rate = 0.1
+maturity = 7
+​
+value = investment * (1+interest_rate) ** maturity
+print(value)
+194.87171000000012
+Here, it runs the same as an excel sum
+
+Note, to generate text look at screenshot saved in doc 'W1 seminar'. Importantly, if I want to put in a variable (i.e. value from above), I need to convert to a string and to do so I put str(value) - this is separate to what is above
+
+To remove a variable, do elemetnt(-no. things to remove) e.g.:
+
+x = [100,900,500,8,7]
+​
+print(x)
+[100, 900, 500, 8, 7]
+x.pop(-1)
+print(x)
+[100, 900, 500]
+To remove an element, use variable.POP
+
+smallrates = x[ : 1]
+print(smallrates)
+​
+[100]
+bigrates = x[1:3]
+print(bigrates)
+[900, 500]
+Here, use the : to indicate what values you want to start:stop at. Remember, starts at 0. So,100=0. Hence, we stop at 1 - this does not incl. the 1st element. For bigrates (e.g. over 100), we start at 1 = 900, and want 2 = 500. Hence we have to run to 3.
