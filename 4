@@ -1,0 +1,128 @@
+Seminar 4: Linear regression and shrinkage
+Ideally, we want unbiased, low variance predictors When we have a large number of predictors and too few observations, we may have v high variance
+
+So, we may try to shrink the estimated coefficients - as to reduce variance, and likeliihood of overfitting - whilst only marginally increasing bias. Bias reflect the predictive capacity fo a training sample vs testing, so we need to keep this low.
+
+To shrink the coefficients, we have two approaches: Subset selection - remove unnecessary predictors
+
+Shrinkage - shrinking some of the coefficients are rendered zero, or at least close to
+
+The specification for srhinkage is derived from Lasso or Ridge - the former can set the coef to zero, ridge does not.
+
+import pandas as pd
+df = pd.read_csv('C:/Users/ELyons/Data/Boston.csv', index_col = 0)
+​
+df.head(10)
+crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+1	0.00632	18.0	2.31	0	0.538	6.575	65.2	4.0900	1	296	15.3	4.98	24.0
+2	0.02731	0.0	7.07	0	0.469	6.421	78.9	4.9671	2	242	17.8	9.14	21.6
+3	0.02729	0.0	7.07	0	0.469	7.185	61.1	4.9671	2	242	17.8	4.03	34.7
+4	0.03237	0.0	2.18	0	0.458	6.998	45.8	6.0622	3	222	18.7	2.94	33.4
+5	0.06905	0.0	2.18	0	0.458	7.147	54.2	6.0622	3	222	18.7	5.33	36.2
+6	0.02985	0.0	2.18	0	0.458	6.430	58.7	6.0622	3	222	18.7	5.21	28.7
+7	0.08829	12.5	7.87	0	0.524	6.012	66.6	5.5605	5	311	15.2	12.43	22.9
+8	0.14455	12.5	7.87	0	0.524	6.172	96.1	5.9505	5	311	15.2	19.15	27.1
+9	0.21124	12.5	7.87	0	0.524	5.631	100.0	6.0821	5	311	15.2	29.93	16.5
+10	0.17004	12.5	7.87	0	0.524	6.004	85.9	6.5921	5	311	15.2	17.10	18.9
+from sklearn.model_selection import train_test_split
+​
+X = df[['rm', 'nox', 'indus','crim', 'crim', 'tax', 'ptratio', 'age', 'dis']]
+​
+y = df['medv']
+​
+X_train, X_test, y_train,y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+from sklearn.linear_model import LinearRegression 
+​
+# Define and estimate the model
+lr = LinearRegression().fit(X_train, y_train)
+​
+ypred_lr= lr.predict(X_test)
+​
+# To calculate the model performance, we have to look at Rsquared
+​
+from sklearn.metrics import r2_score
+​
+r2_lr = round(r2_score(y_test, ypred_lr),2)
+​
+accuracy = {'ols':{'r2':r2_lr}} # by making library ({}), you can just enter in word to reveal fig. As per below.
+accuracy
+{'ols': {'r2': 0.66}}
+# Now, let's compare model's when we apply ridge regression
+​
+from sklearn.linear_model import Ridge
+​
+alpha = 10 # penalty term, lamda
+ridge = Ridge(alpha = alpha, fit_intercept = True)
+ridge.fit(X_train, y_train)
+​
+ypred_ridge = ridge.predict(X_test)
+​
+r2_ridge = round(r2_score(y_test, ypred_ridge),2)
+accuracy['ridge'] = r2_ridge 
+​
+accuracy
+{'ols': {'r2': 0.66}, 'ridge': 0.65}
+# Now, let's compare model's when we apply lasso regression
+​
+from sklearn.linear_model import Lasso
+​
+alpha = 10 # penalty term, lamda
+lasso = Lasso(alpha = alpha, fit_intercept = True)
+lasso.fit(X_train, y_train)
+​
+ypred_lasso = lasso.predict(X_test)
+​
+r2_lasso = round(r2_score(y_test, ypred_lasso),2)
+accuracy['lasso'] = r2_lasso
+​
+accuracy
+{'ols': {'r2': 0.66}, 'ridge': 0.65, 'lasso': 0.26}
+# If we wanted to represent these figures more neatly
+​
+accuracy = pd.DataFrame(accuracy)
+print(accuracy)
+​
+## NB, use library function of {} more!!!
+     ols  ridge  lasso
+r2  0.66   0.65   0.26
+Cross validation of the penalty term
+## Here, we are creating a new value for lamda. We are testing what is the optimal lamda to maximise r squared
+​
+from sklearn.model_selection import GridSearchCV
+import numpy as np
+​
+alpha_space = np.linspace(0.1,100,20) # 20 penalty terms beteen 0.1-100
+param_grid = {'alpha': alpha_space}
+ridge_cv = GridSearchCV(Ridge(), param_grid, cv=5)
+​
+ridge_cv.fit(X_train, y_train)
+​
+ypred_ridge_cv = ridge_cv.predict(X_test)
+​
+r2_ridge_cv = round(r2_score(y_test, ypred_ridge_cv), 2)
+​
+from sklearn.model_selection import GridSearchCV
+import numpy as np
+​
+alpha_space = np.linspace(0.1,100,20) # 20 penalty terms beteen 0.1-100
+param_grid = {'alpha': alpha_space}
+lasso_cv = GridSearchCV(Lasso(), param_grid, cv=5)
+​
+lasso_cv.fit(X_train, y_train)
+​
+ypred_lasso_cv = lasso_cv.predict(X_test)
+​
+r2_lasso_cv = round(r2_score(y_test, ypred_lasso_cv), 2)
+accuracy['lass_cv'] = r2_lasso_cv
+accuracy['ridge_cv'] = r2_ridge_cv
+​
+accuracy
+ols	ridge	lasso	lass_cv	ridge_cv
+r2	0.66	0.65	0.26	0.65	0.66
+What we can see from the results above is that the OLS regression performs at least as well as ridge_cv. Hence, no need to add penalty term.
+
+print(ridge_cv.best_estimator_)
+print(lasso_cv.best_estimator_)
+Ridge(alpha=0.1)
+Lasso(alpha=0.1)
+To prove this, above is the size of the lamda used to generate the optimal r squared. As this is so low, clearly no need.
