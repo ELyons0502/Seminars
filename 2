@@ -1,0 +1,350 @@
+Seminar 2
+import numpy as np
+import pandas as pd
+# Indexing data
+​
+icecream_sales = np.array([30,40,35,130,120,60])
+weather_coded = np.array([0,1,0,1,1,0])
+customers = np.array([2000,2100,1500,8000,7200,2000])
+dataframe = pd.DataFrame({'icecream_sales': icecream_sales,
+                         'weather_codes': weather_coded,
+                         'customers':customers})
+​
+print(dataframe)
+   icecream_sales  weather_codes  customers
+0              30              0       2000
+1              40              1       2100
+2              35              0       1500
+3             130              1       8000
+4             120              1       7200
+5              60              0       2000
+Sales, weather and customers are indicative of data entries. When constructing DF, we put the name we want to call the variable in {''}. In this example, we have matched it as th esame as exisiting title.
+
+The 0-5 is what we call an 'Index'
+
+ourIndex = np.array(['2010-04-30', '2010-05-31','2010-06-30', '2010-07-31', '2010-08-31', '2010-09-30'])
+print(ourIndex)
+['2010-04-30' '2010-05-31' '2010-06-30' '2010-07-31' '2010-08-31'
+ '2010-09-30']
+dataframe.set_index(ourIndex, inplace=False)
+icecream_sales	weather_codes	customers
+2010-04-30	30	0	2000
+2010-05-31	40	1	2100
+2010-06-30	35	0	1500
+2010-07-31	130	1	8000
+2010-08-31	120	1	7200
+2010-09-30	60	0	2000
+print(dataframe)
+            icecream_sales  weather_codes  customers
+2010-04-30              30              0       2000
+2010-05-31              40              1       2100
+2010-06-30              35              0       1500
+2010-07-31             130              1       8000
+2010-08-31             120              1       7200
+2010-09-30              60              0       2000
+I have replaced the index values of 0-5 with 'ourIndex' variable in the intial dataframe. If I make the inplace=False, I get a fancy table (In10), if I use inplace=True, then it won't automatically print, and hence I need to enter print(dataframe)
+
+# Slicing Data
+    
+    subset1 = dataframe[['icecream_sales', 'customers']]
+    # here, I am just limiting what I want to reveal based on column name
+print(f'subset1:\n{subset1}/n')
+subset1:
+            icecream_sales  customers
+2010-04-30              30       2000
+2010-05-31              40       2100
+2010-06-30              35       1500
+2010-07-31             130       8000
+2010-08-31             120       7200
+2010-09-30              60       2000/n
+print(subset1)
+            icecream_sales  customers
+2010-04-30              30       2000
+2010-05-31              40       2100
+2010-06-30              35       1500
+2010-07-31             130       8000
+2010-08-31             120       7200
+2010-09-30              60       2000
+# If we only wanted specific rows, could run as:
+subset2 = dataframe[1:4]
+print(subset2)
+            icecream_sales  weather_codes  customers
+2010-05-31              40              1       2100
+2010-06-30              35              0       1500
+2010-07-31             130              1       8000
+The 1:4 essentially means print index 1,2,3 UP to but not including 4 (i.e. 2010-05-31, 2010-06-30, 2010-07-31)
+
+subset3 = dataframe.loc['2010-05-31', 'customers']
+print(subset3)
+2100
+Here, we are just returning value in 2010-05-31 for customers - it is essentially an index match
+
+subset4 = dataframe.iloc[0:3, 0:2]
+print(subset4)
+            icecream_sales  weather_codes
+2010-04-30              30              0
+2010-05-31              40              1
+2010-06-30              35              0
+# Here, I have selected rows 0,1 and 2 (down) and columns 0 and 1 (across) from initial df
+Data Frame Manipulation
+
+dataframe['icecream_sales']
+2010-04-30     30
+2010-05-31     40
+2010-06-30     35
+2010-07-31    130
+2010-08-31    120
+2010-09-30     60
+Name: icecream_sales, dtype: int32
+dataframe['icecream_sales'].shift(1)
+2010-04-30      NaN
+2010-05-31     30.0
+2010-06-30     40.0
+2010-07-31     35.0
+2010-08-31    130.0
+2010-09-30    120.0
+Name: icecream_sales, dtype: float64
+The shift essentially pushes down the sales value by one row. So, 30 sales in 2010-04-30 now fals down to 2010-05-31. The (1) represents the number of rows it is pushed down.
+
+dataframe['icecream_sales_lag2'] = dataframe['icecream_sales'].shift(2)
+print(dataframe)
+            icecream_sales  weather_codes  customers  icecream_sales_lag2
+2010-04-30              30              0       2000                  NaN
+2010-05-31              40              1       2100                  NaN
+2010-06-30              35              0       1500                 30.0
+2010-07-31             130              1       8000                 40.0
+2010-08-31             120              1       7200                 35.0
+2010-09-30              60              0       2000                130.0
+here, we have created a new column 'ice cream sales lag', where the values are derived from shifted icecream-sales from initial df
+
+Use categorical values for weather codes - bad = 0, good = 1
+
+dataframe['weather'] = pd.Categorical.from_codes(codes=dataframe['weather_codes'], categories=['bad','good'])
+
+dataframe['name of variable'] = pd.code abbrev (codes=where it's from['the variable we are altering', categories=[names for values])
+
+print(dataframe)
+            icecream_sales  weather_codes  customers  icecream_sales_lag2  \
+2010-04-30              30              0       2000                  NaN   
+2010-05-31              40              1       2100                  NaN   
+2010-06-30              35              0       1500                 30.0   
+2010-07-31             130              1       8000                 40.0   
+2010-08-31             120              1       7200                 35.0   
+2010-09-30              60              0       2000                130.0   
+
+           weather  
+2010-04-30     bad  
+2010-05-31    good  
+2010-06-30     bad  
+2010-07-31    good  
+2010-08-31    good  
+2010-09-30     bad  
+group_means = dataframe.groupby('weather').mean()
+print(group_means)
+         icecream_sales  weather_codes    customers  icecream_sales_lag2
+weather                                                                 
+bad           41.666667            0.0  1833.333333                 80.0
+good          96.666667            1.0  5766.666667                 37.5
+~ so, here, the code essentially categorises all values by groups 'good' or 'bad' weather. By then applying .mean(), we estimate the mean of these new categories, Can apply other things, such as median, SE etc too.
+
+Uploading real datasets
+
+df = pd.read_csv('Credit.csv') 
+# Uploaded credit manually to jupyter folder
+df =
+Id	Income	Limit	Rating	Cards	Age	Education	Own	Student	Married	Region	Balance
+0	1	14.891	3606	283	2	34	11	No	No	Yes	South	333
+1	2	106.025	6645	483	3	82	15	Yes	Yes	Yes	West	903
+2	3	104.593	7075	514	4	71	11	No	No	No	West	580
+3	4	148.924	9504	681	3	36	11	Yes	No	No	West	964
+4	5	55.882	4897	357	2	68	16	No	No	Yes	South	331
+...	...	...	...	...	...	...	...	...	...	...	...	...
+395	396	12.096	4100	307	3	32	13	No	No	Yes	South	560
+396	397	13.364	3838	296	5	65	17	No	No	No	East	480
+397	398	57.872	4171	321	5	67	12	Yes	No	Yes	South	138
+398	399	37.728	2525	192	1	44	13	No	No	Yes	South	0
+399	400	18.701	5524	415	5	64	7	Yes	No	No	West	966
+400 rows × 12 columns
+
+df.set_index('Id')
+# here, we replace the initial index with the values from id
+Income	Limit	Rating	Cards	Age	Education	Own	Student	Married	Region	Balance
+Id											
+1	14.891	3606	283	2	34	11	No	No	Yes	South	333
+2	106.025	6645	483	3	82	15	Yes	Yes	Yes	West	903
+3	104.593	7075	514	4	71	11	No	No	No	West	580
+4	148.924	9504	681	3	36	11	Yes	No	No	West	964
+5	55.882	4897	357	2	68	16	No	No	Yes	South	331
+...	...	...	...	...	...	...	...	...	...	...	...
+396	12.096	4100	307	3	32	13	No	No	Yes	South	560
+397	13.364	3838	296	5	65	17	No	No	No	East	480
+398	57.872	4171	321	5	67	12	Yes	No	Yes	South	138
+399	37.728	2525	192	1	44	13	No	No	Yes	South	0
+400	18.701	5524	415	5	64	7	Yes	No	No	West	966
+400 rows × 11 columns
+
+# dropping columns 
+df.drop(['Cards'], axis=1, inplace=True)
+​
+# You need the axis=1 to say look across named columns, not down the rows
+# Rather than drop columns, if you only want python to read specific data from the initial data set, then use:
+df_specific = pd.read_csv('Credit.csv', usecols = ['Id', 'Limit', 'Rating', 'Income'])
+df_specific.set_index('Id')
+df_specific
+Id	Income	Limit	Rating
+0	1	14.891	3606	283
+1	2	106.025	6645	483
+2	3	104.593	7075	514
+3	4	148.924	9504	681
+4	5	55.882	4897	357
+...	...	...	...	...
+395	396	12.096	4100	307
+396	397	13.364	3838	296
+397	398	57.872	4171	321
+398	399	37.728	2525	192
+399	400	18.701	5524	415
+400 rows × 4 columns
+
+# Selecting a random sample from dataset 
+df_spec = df.sample(n=100)
+df_spec
+Id	Income	Limit	Rating	Age	Education	Own	Student	Married	Region	Balance
+106	107	16.819	1337	115	74	15	No	No	Yes	West	0
+13	14	43.682	6922	511	49	9	No	No	Yes	South	1081
+166	167	35.691	2880	214	35	15	No	No	No	East	0
+109	110	13.561	3261	279	37	19	No	No	Yes	West	297
+86	87	55.367	6340	448	33	15	No	No	Yes	South	815
+...	...	...	...	...	...	...	...	...	...	...	...
+385	386	26.400	5640	398	58	15	Yes	No	No	West	905
+372	373	19.782	3782	293	46	16	Yes	Yes	No	South	840
+388	389	37.878	6827	482	80	13	Yes	No	No	South	1129
+55	56	32.916	1786	154	60	8	Yes	No	Yes	West	0
+35	36	23.350	2558	220	49	12	Yes	Yes	No	South	419
+100 rows × 11 columns
+
+# checking for missing values
+df.isna().sum()
+Id           0
+Income       0
+Limit        0
+Rating       0
+Age          0
+Education    0
+Own          0
+Student      0
+Married      0
+Region       0
+Balance      0
+dtype: int64
+^ shows that no missing data
+
+# Let's artificially create missing data
+​
+# First, find 20 random rows from new dataset
+​
+# Find the values for limit and education from this data
+​
+missing_index = np.random.randint(300, size = 20)
+print(missing_index)
+​
+np.nan
+[232 262  89 296 155 148  67 230  69 131  45 176 153 283  64 274 161 192
+  71 271]
+nan
+df.loc[missing_index, ['Limit', 'Education']]
+Limit	Education
+232	NaN	NaN
+262	4049.0	13.0
+89	7518.0	9.0
+296	5140.0	17.0
+155	1362.0	9.0
+148	2420.0	11.0
+67	5099.0	16.0
+230	5137.0	9.0
+69	6819.0	14.0
+131	NaN	NaN
+45	7569.0	12.0
+176	2607.0	18.0
+153	4612.0	17.0
+283	6396.0	17.0
+64	2937.0	15.0
+274	5869.0	9.0
+161	1705.0	14.0
+192	3933.0	14.0
+71	7402.0	12.0
+271	NaN	NaN
+df.loc[missing_index, ['Limit', 'Education']] = np.nan
+​
+# here, we have assigned value 'NaN' to all of the 20 rows of limit and education from above
+df
+Id	Income	Limit	Rating	Age	Education	Own	Student	Married	Region	Balance
+0	1	14.891	3606.0	283	34	11.0	No	No	Yes	South	333
+1	2	106.025	6645.0	483	82	15.0	Yes	Yes	Yes	West	903
+2	3	104.593	7075.0	514	71	11.0	No	No	No	West	580
+3	4	148.924	9504.0	681	36	11.0	Yes	No	No	West	964
+4	5	55.882	4897.0	357	68	16.0	No	No	Yes	South	331
+...	...	...	...	...	...	...	...	...	...	...	...
+395	396	12.096	4100.0	307	32	13.0	No	No	Yes	South	560
+396	397	13.364	3838.0	296	65	17.0	No	No	No	East	480
+397	398	57.872	4171.0	321	67	12.0	Yes	No	Yes	South	138
+398	399	37.728	2525.0	192	44	13.0	No	No	Yes	South	0
+399	400	18.701	5524.0	415	64	7.0	Yes	No	No	West	966
+400 rows × 11 columns
+
+# To get rid of missing values (hidden in this dataset), we can apply a range of approaches
+​
+avg = df['Limit'].mean()
+print(avg)
+4731.794202898551
+df['Limit'].fillna(value = avg, inplace=False)
+0      3606.0
+1      6645.0
+2      7075.0
+3      9504.0
+4      4897.0
+        ...  
+395    4100.0
+396    3838.0
+397    4171.0
+398    2525.0
+399    5524.0
+Name: Limit, Length: 400, dtype: float64
+This means that fr every time there is a misisng value under column 'Limit', we replace it with the value 'avg'. We have then printed such using inplace = False
+
+# Alternatively, can just drop na's
+​
+df.dropna(axis = 0, how = 'any', inplace = True)
+# So, it says look through rows, drop 'any' na's
+df.isna().sum()
+Id           0
+Income       0
+Limit        0
+Rating       0
+Age          0
+Education    0
+Own          0
+Student      0
+Married      0
+Region       0
+Balance      0
+dtype: int64
+Hence we have no na's anymore ^^
+
+# How to add an additional column of data - max value 10, with 345 rows
+​
+group = np.random.randint(10, size=345)
+df['Group'] = group
+df
+Id	Income	Limit	Rating	Age	Education	Own	Student	Married	Region	Balance	Group
+0	1	14.891	3606.0	283	34	11.0	No	No	Yes	South	333	6
+1	2	106.025	6645.0	483	82	15.0	Yes	Yes	Yes	West	903	5
+2	3	104.593	7075.0	514	71	11.0	No	No	No	West	580	5
+3	4	148.924	9504.0	681	36	11.0	Yes	No	No	West	964	5
+4	5	55.882	4897.0	357	68	16.0	No	No	Yes	South	331	7
+...	...	...	...	...	...	...	...	...	...	...	...	...
+395	396	12.096	4100.0	307	32	13.0	No	No	Yes	South	560	2
+396	397	13.364	3838.0	296	65	17.0	No	No	No	East	480	9
+397	398	57.872	4171.0	321	67	12.0	Yes	No	Yes	South	138	1
+398	399	37.728	2525.0	192	44	13.0	No	No	Yes	South	0	9
+399	400	18.701	5524.0	415	64	7.0	Yes	No	No	West	966	6
+345 rows × 12 columns
