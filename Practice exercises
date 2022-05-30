@@ -1,0 +1,249 @@
+Practice exercises
+import pandas as pd
+df = pd.read_csv('C:/Users/ELyons/Data/Boston.csv', index_col = 0)
+df
+crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+1	0.00632	18.0	2.31	0	0.538	6.575	65.2	4.0900	1	296	15.3	4.98	24.0
+2	0.02731	0.0	7.07	0	0.469	6.421	78.9	4.9671	2	242	17.8	9.14	21.6
+3	0.02729	0.0	7.07	0	0.469	7.185	61.1	4.9671	2	242	17.8	4.03	34.7
+4	0.03237	0.0	2.18	0	0.458	6.998	45.8	6.0622	3	222	18.7	2.94	33.4
+5	0.06905	0.0	2.18	0	0.458	7.147	54.2	6.0622	3	222	18.7	5.33	36.2
+...	...	...	...	...	...	...	...	...	...	...	...	...	...
+502	0.06263	0.0	11.93	0	0.573	6.593	69.1	2.4786	1	273	21.0	9.67	22.4
+503	0.04527	0.0	11.93	0	0.573	6.120	76.7	2.2875	1	273	21.0	9.08	20.6
+504	0.06076	0.0	11.93	0	0.573	6.976	91.0	2.1675	1	273	21.0	5.64	23.9
+505	0.10959	0.0	11.93	0	0.573	6.794	89.3	2.3889	1	273	21.0	6.48	22.0
+506	0.04741	0.0	11.93	0	0.573	6.030	80.8	2.5050	1	273	21.0	7.88	11.9
+506 rows × 13 columns
+
+df.columns
+# Show's all the variables
+Index(['crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis', 'rad', 'tax',
+       'ptratio', 'lstat', 'medv'],
+      dtype='object')
+df.head(10)
+# Reaves (x) number of data
+crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+1	0.00632	18.0	2.31	0	0.538	6.575	65.2	4.0900	1	296	15.3	4.98	24.0
+2	0.02731	0.0	7.07	0	0.469	6.421	78.9	4.9671	2	242	17.8	9.14	21.6
+3	0.02729	0.0	7.07	0	0.469	7.185	61.1	4.9671	2	242	17.8	4.03	34.7
+4	0.03237	0.0	2.18	0	0.458	6.998	45.8	6.0622	3	222	18.7	2.94	33.4
+5	0.06905	0.0	2.18	0	0.458	7.147	54.2	6.0622	3	222	18.7	5.33	36.2
+6	0.02985	0.0	2.18	0	0.458	6.430	58.7	6.0622	3	222	18.7	5.21	28.7
+7	0.08829	12.5	7.87	0	0.524	6.012	66.6	5.5605	5	311	15.2	12.43	22.9
+8	0.14455	12.5	7.87	0	0.524	6.172	96.1	5.9505	5	311	15.2	19.15	27.1
+9	0.21124	12.5	7.87	0	0.524	5.631	100.0	6.0821	5	311	15.2	29.93	16.5
+10	0.17004	12.5	7.87	0	0.524	6.004	85.9	6.5921	5	311	15.2	17.10	18.9
+df.isnull().sum()
+# checks for missing observations 
+crim       0
+zn         0
+indus      0
+chas       0
+nox        0
+rm         0
+age        0
+dis        0
+rad        0
+tax        0
+ptratio    0
+lstat      0
+medv       0
+dtype: int64
+# Let's consider relationship of nox against medv
+​
+import seaborn as sns
+sns.set_theme(style = "darkgrid")
+​
+g= sns.jointplot(x="nox", y="medv", data=df, kind="reg", color="y", height=7)
+​
+# Note here that truncate merely resizes the file
+
+from sklearn.model_selection import train_test_split
+import statsmodels.api as sm 
+​
+X = df[['rm', 'nox']]
+X = sm.add_constant(X)
+​
+y = df[['medv']]
+​
+X_train,X_test,y_train,y_test = train_test_split(X,y, test_size = 0.25, random_state=42)
+print(X_train)
+​
+# remember, test_size = the percentage of data that is training data
+     const     rm     nox
+183    1.0  7.155  0.4880
+156    1.0  6.152  0.8710
+281    1.0  7.820  0.4429
+127    1.0  5.613  0.5810
+330    1.0  6.333  0.4600
+..     ...    ...     ...
+107    1.0  5.836  0.5200
+271    1.0  5.856  0.4640
+349    1.0  6.635  0.4350
+436    1.0  6.629  0.7400
+103    1.0  6.405  0.5200
+
+[379 rows x 3 columns]
+# Finding estimates for model
+​
+model = sm.OLS(y_train, X_train)
+results = model.fit()
+​
+​
+print(results.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   medv   R-squared:                       0.547
+Model:                            OLS   Adj. R-squared:                  0.545
+Method:                 Least Squares   F-statistic:                     226.9
+Date:                Thu, 18 Nov 2021   Prob (F-statistic):           2.30e-65
+Time:                        20:33:38   Log-Likelihood:                -1237.7
+No. Observations:                 379   AIC:                             2481.
+Df Residuals:                     376   BIC:                             2493.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        -20.9431      3.847     -5.445      0.000     -28.507     -13.379
+rm             8.4408      0.477     17.679      0.000       7.502       9.380
+nox          -17.0590      2.886     -5.910      0.000     -22.734     -11.384
+==============================================================================
+Omnibus:                      128.212   Durbin-Watson:                   2.192
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              782.154
+Skew:                           1.286   Prob(JB):                    1.44e-170
+Kurtosis:                       9.551   Cond. No.                         87.8
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+To go a step further, try an alternative approach:
+# This approach allows you to construct MSE et al., as to allow for relative comparisons
+from sklearn.linear_model import LinearRegression
+model = LinearRegression().fit(X_train, y_train)
+​
+LinearRegression()
+LinearRegression()
+coef = model.coef_
+print('Coefficients: \n', coef)
+Coefficients: 
+ [[  0.           8.44083327 -17.05904012]]
+# Forecast house prices using training data and test data inputs (i.e. X test)
+# MSE
+from sklearn.metrics import mean_squared_error
+​
+ypred = model.predict(X_test)
+                      
+mse = mean_squared_error(y_test, ypred)
+print('mean_squared_error: ', mse)
+​
+mean_squared_error:  36.642393190906546
+# Adj R square
+from sklearn.metrics import r2_score
+​
+N = X.shape[379] # number of observations
+p = X.shape[2] # number of explanatory variables
+​
+r2 = r2_score(y_test,ypred)
+​
+adj_r2 = round(1-(1-r2) * (N-1)/(N-p-1), 2)
+---------------------------------------------------------------------------
+IndexError                                Traceback (most recent call last)
+<ipython-input-55-3954ed163dcf> in <module>
+      2 from sklearn.metrics import r2_score
+      3 
+----> 4 N = X.shape[379] # number of observations
+      5 p = X.shape[2] # number of explanatory variables
+      6 
+
+IndexError: tuple index out of range
+
+#Adjusted R2
+​
+Adj_r2 = round(1 - (1-r2_score(y_test, ypred)) * (len(y)-1)/(len(y)-X.shape[1]-1),2)
+​
+print(Adj_r2)
+0.47
+# Now, create new model
+import statsmodels.api as ap
+​
+​
+X = df[['rm', 'nox']]
+X = sm.add_constant(X)
+​
+y = df['medv']
+from sklearn.model_selection import train_test_split
+​
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.33, random_state=42)
+​
+model = sm.OLS(y_test, X_test)
+results = model.fit()
+print(results.summary())
+​
+model = sm.OLS(y_train, X_train)
+results = model.fit()
+print(results.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   medv   R-squared:                       0.562
+Model:                            OLS   Adj. R-squared:                  0.556
+Method:                 Least Squares   F-statistic:                     105.1
+Date:                Thu, 18 Nov 2021   Prob (F-statistic):           4.12e-30
+Time:                        21:23:07   Log-Likelihood:                -529.33
+No. Observations:                 167   AIC:                             1065.
+Df Residuals:                     164   BIC:                             1074.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        -16.5879      5.530     -3.000      0.003     -27.507      -5.669
+rm             8.1665      0.713     11.453      0.000       6.759       9.574
+nox          -22.5578      4.179     -5.398      0.000     -30.810     -14.306
+==============================================================================
+Omnibus:                       93.227   Durbin-Watson:                   2.099
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              578.423
+Skew:                           1.999   Prob(JB):                    2.50e-126
+Kurtosis:                      11.194   Cond. No.                         89.5
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   medv   R-squared:                       0.523
+Model:                            OLS   Adj. R-squared:                  0.520
+Method:                 Least Squares   F-statistic:                     184.3
+Date:                Thu, 18 Nov 2021   Prob (F-statistic):           9.15e-55
+Time:                        21:23:07   Log-Likelihood:                -1114.7
+No. Observations:                 339   AIC:                             2235.
+Df Residuals:                     336   BIC:                             2247.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        -18.6704      4.213     -4.431      0.000     -26.958     -10.382
+rm             8.1242      0.519     15.662      0.000       7.104       9.144
+nox          -17.5121      3.177     -5.513      0.000     -23.761     -11.263
+==============================================================================
+Omnibus:                      119.152   Durbin-Watson:                   2.157
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              688.549
+Skew:                           1.342   Prob(JB):                    3.04e-150
+Kurtosis:                       9.445   Cond. No.                         89.3
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+  # Ex 11: Construct the R2 without using the r2_score function from sklearn package
+import numpy as np
+​
+# Construct the predicted values\n",
+ypred = results.predict(X_test)
+ss_tot = np.sum( (y_test - ypred.mean())**2 )
+ss_res = np.sum( (y_test - ypred)**2 )
+​
+r2_score = (1 - ss_res/ss_tot)
+print(round(r2_score,2))
+0.56
