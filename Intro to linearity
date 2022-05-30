@@ -1,0 +1,284 @@
+Intor to linearity
+import pandas as pd 
+import numpy as np
+​
+df = pd.read_csv('Boston.csv')
+df
+Unnamed: 0	crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+0	1	0.00632	18.0	2.31	0	0.538	6.575	65.2	4.0900	1	296	15.3	4.98	24.0
+1	2	0.02731	0.0	7.07	0	0.469	6.421	78.9	4.9671	2	242	17.8	9.14	21.6
+2	3	0.02729	0.0	7.07	0	0.469	7.185	61.1	4.9671	2	242	17.8	4.03	34.7
+3	4	0.03237	0.0	2.18	0	0.458	6.998	45.8	6.0622	3	222	18.7	2.94	33.4
+4	5	0.06905	0.0	2.18	0	0.458	7.147	54.2	6.0622	3	222	18.7	5.33	36.2
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+501	502	0.06263	0.0	11.93	0	0.573	6.593	69.1	2.4786	1	273	21.0	9.67	22.4
+502	503	0.04527	0.0	11.93	0	0.573	6.120	76.7	2.2875	1	273	21.0	9.08	20.6
+503	504	0.06076	0.0	11.93	0	0.573	6.976	91.0	2.1675	1	273	21.0	5.64	23.9
+504	505	0.10959	0.0	11.93	0	0.573	6.794	89.3	2.3889	1	273	21.0	6.48	22.0
+505	506	0.04741	0.0	11.93	0	0.573	6.030	80.8	2.5050	1	273	21.0	7.88	11.9
+506 rows × 14 columns
+
+​
+import pandas as pd
+import numpy as np
+​
+df = pd.read_csv('Boston.csv', index_col = 0)
+df
+​
+# add the index col = 0 - not sure what this is for, so message Daniele
+​
+crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+1	0.00632	18.0	2.31	0	0.538	6.575	65.2	4.0900	1	296	15.3	4.98	24.0
+2	0.02731	0.0	7.07	0	0.469	6.421	78.9	4.9671	2	242	17.8	9.14	21.6
+3	0.02729	0.0	7.07	0	0.469	7.185	61.1	4.9671	2	242	17.8	4.03	34.7
+4	0.03237	0.0	2.18	0	0.458	6.998	45.8	6.0622	3	222	18.7	2.94	33.4
+5	0.06905	0.0	2.18	0	0.458	7.147	54.2	6.0622	3	222	18.7	5.33	36.2
+...	...	...	...	...	...	...	...	...	...	...	...	...	...
+502	0.06263	0.0	11.93	0	0.573	6.593	69.1	2.4786	1	273	21.0	9.67	22.4
+503	0.04527	0.0	11.93	0	0.573	6.120	76.7	2.2875	1	273	21.0	9.08	20.6
+504	0.06076	0.0	11.93	0	0.573	6.976	91.0	2.1675	1	273	21.0	5.64	23.9
+505	0.10959	0.0	11.93	0	0.573	6.794	89.3	2.3889	1	273	21.0	6.48	22.0
+506	0.04741	0.0	11.93	0	0.573	6.030	80.8	2.5050	1	273	21.0	7.88	11.9
+506 rows × 13 columns
+
+df.columns
+# list of all of the variables
+Index(['crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis', 'rad', 'tax',
+       'ptratio', 'lstat', 'medv'],
+      dtype='object')
+df.isnull().sum()
+# this is to show presence of missing data - in this case, 0
+crim       0
+zn         0
+indus      0
+chas       0
+nox        0
+rm         0
+age        0
+dis        0
+rad        0
+tax        0
+ptratio    0
+lstat      0
+medv       0
+dtype: int64
+Linear regression
+df.corr()
+crim	zn	indus	chas	nox	rm	age	dis	rad	tax	ptratio	lstat	medv
+crim	1.000000	-0.200469	0.406583	-0.055892	0.420972	-0.219247	0.352734	-0.379670	0.625505	0.582764	0.289946	0.455621	-0.388305
+zn	-0.200469	1.000000	-0.533828	-0.042697	-0.516604	0.311991	-0.569537	0.664408	-0.311948	-0.314563	-0.391679	-0.412995	0.360445
+indus	0.406583	-0.533828	1.000000	0.062938	0.763651	-0.391676	0.644779	-0.708027	0.595129	0.720760	0.383248	0.603800	-0.483725
+chas	-0.055892	-0.042697	0.062938	1.000000	0.091203	0.091251	0.086518	-0.099176	-0.007368	-0.035587	-0.121515	-0.053929	0.175260
+nox	0.420972	-0.516604	0.763651	0.091203	1.000000	-0.302188	0.731470	-0.769230	0.611441	0.668023	0.188933	0.590879	-0.427321
+rm	-0.219247	0.311991	-0.391676	0.091251	-0.302188	1.000000	-0.240265	0.205246	-0.209847	-0.292048	-0.355501	-0.613808	0.695360
+age	0.352734	-0.569537	0.644779	0.086518	0.731470	-0.240265	1.000000	-0.747881	0.456022	0.506456	0.261515	0.602339	-0.376955
+dis	-0.379670	0.664408	-0.708027	-0.099176	-0.769230	0.205246	-0.747881	1.000000	-0.494588	-0.534432	-0.232471	-0.496996	0.249929
+rad	0.625505	-0.311948	0.595129	-0.007368	0.611441	-0.209847	0.456022	-0.494588	1.000000	0.910228	0.464741	0.488676	-0.381626
+tax	0.582764	-0.314563	0.720760	-0.035587	0.668023	-0.292048	0.506456	-0.534432	0.910228	1.000000	0.460853	0.543993	-0.468536
+ptratio	0.289946	-0.391679	0.383248	-0.121515	0.188933	-0.355501	0.261515	-0.232471	0.464741	0.460853	1.000000	0.374044	-0.507787
+lstat	0.455621	-0.412995	0.603800	-0.053929	0.590879	-0.613808	0.602339	-0.496996	0.488676	0.543993	0.374044	1.000000	-0.737663
+medv	-0.388305	0.360445	-0.483725	0.175260	-0.427321	0.695360	-0.376955	0.249929	-0.381626	-0.468536	-0.507787	-0.737663	1.000000
+This table shows relationship between each variable and the different predictors. For example, median house prices are $3800 lower with high crime
+
+import seaborn as sns
+​
+g = sns.jointplot(x='age', y='medv', data=df, kind = 'reg', truncate=False, color = 'm')
+
+Seaborn is required to produce graphs. The equation used is essentially:
+
+g = sns.jointplot(x = beta variable, y = target/dependent variable, data = df, kind = regression, truncate = do we alter axis or not, colour = 'magenta')
+
+Note, the shaded region marks the 95% CI round the fitted values
+
+import statsmodels.api as sm
+X = df[['rm', 'age']]
+X = sm.add_constant(X)
+X
+​
+# here, I have created my explanatory variabe
+​
+y = df['medv'] # this will be my target variable
+# As to train and test my regression I need to: 
+from sklearn.model_selection import train_test_split
+​
+# this package is used to split out target bs dependent, training vs testing
+​
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size = 0.25, random_state = 42)
+# Need to ask what the random_state means 
+# The test_size = 0.25 is indicative of the fact we will use 75% of data for training purposes
+model = sm.OLS(y_train,X_train)
+results = model.fit() # comes from the 75% worth of training 
+​
+print(results.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   medv   R-squared:                       0.542
+Model:                            OLS   Adj. R-squared:                  0.540
+Method:                 Least Squares   F-statistic:                     222.8
+Date:                Sat, 23 Oct 2021   Prob (F-statistic):           1.54e-64
+Time:                        15:54:57   Log-Likelihood:                -1239.6
+No. Observations:                 379   AIC:                             2485.
+Df Residuals:                     376   BIC:                             2497.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        -27.5875      3.273     -8.428      0.000     -34.024     -21.152
+rm             8.7245      0.469     18.615      0.000       7.803       9.646
+age           -0.0676      0.012     -5.549      0.000      -0.092      -0.044
+==============================================================================
+Omnibus:                      131.297   Durbin-Watson:                   2.162
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              954.622
+Skew:                           1.262   Prob(JB):                    5.09e-208
+Kurtosis:                      10.354   Cond. No.                         751.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+For every additional room, median house prices increases by 8,7245.𝑊ℎ𝑒𝑟𝑒𝑎𝑠𝑎𝑔𝑒𝑟𝑒𝑑𝑢𝑐𝑒𝑠𝑣𝑎𝑙𝑢𝑒𝑏𝑦60.
+
+The R-squared shows the strenght of the model. 0.542 means that the model explains c.54% of house price variation.
+
+The F-statistic and corresponding P-value. The P-value is essentially zero. This means that both no. rooms and age of house are significant variables. By this, it means that we can reject the null hypothesis - that these variables make no difference to mean.
+
+## Moving onto test data
+​
+import numpy as np
+ypred = results.predict(X_test)
+​
+# Note, to do this we need the r2 score. This is found from:
+# r2_score = 1 - rss/tss
+​
+# So, let's make rss and tss
+rss = np.sum((y_test - ypred)**2)
+tss = np.sum((y_test - y_train.mean())**2)
+​
+​
+r2_score = 1 - rss/tss
+print(r2_score)
+0.48643220392077435
+print(round(r2_score,2))
+​
+# thhis shows strenght of test relationship
+0.49
+X = df[['rm', 'age', 'chas']]
+# Here, we are using the dummy variavle for chas river 
+X = sm.add_constant(X)
+​
+y = df['medv']
+​
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size = 0.25, random_state = 42)
+​
+model_2 = sm.OLS(y_train, X_train)
+results = model_2.fit()
+print(results.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   medv   R-squared:                       0.562
+Model:                            OLS   Adj. R-squared:                  0.558
+Method:                 Least Squares   F-statistic:                     160.1
+Date:                Sat, 23 Oct 2021   Prob (F-statistic):           8.21e-67
+Time:                        16:11:42   Log-Likelihood:                -1231.4
+No. Observations:                 379   AIC:                             2471.
+Df Residuals:                     375   BIC:                             2487.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        -25.9409      3.233     -8.023      0.000     -32.298     -19.584
+rm             8.4693      0.464     18.270      0.000       7.558       9.381
+age           -0.0736      0.012     -6.118      0.000      -0.097      -0.050
+chas           4.9903      1.228      4.064      0.000       2.576       7.405
+==============================================================================
+Omnibus:                      116.750   Durbin-Watson:                   2.171
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              857.034
+Skew:                           1.088   Prob(JB):                    7.90e-187
+Kurtosis:                      10.038   Cond. No.                         758.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+These new results show that if we account for proximity to chas river - as given by incorporation of dummy variable, house price inceases by $4,990.
+
+As another varibvale has been accounted for, predictive accuracy of model is higher.
+
+Alternative approach
+df = pd.read_csv('Boston.csv', index_col = 0)
+df.isnull().sum()
+crim       0
+zn         0
+indus      0
+chas       0
+nox        0
+rm         0
+age        0
+dis        0
+rad        0
+tax        0
+ptratio    0
+lstat      0
+medv       0
+dtype: int64
+# Unlike before, the graph we will plot below will seek to split out the relationship between x and y according to proximit to chas river.
+# The idea here is that we will have 1 graph for houses close by, and 1 for those far away
+​
+sns.relplot(data=df, x='rm', y='medv', col='chas', kind='scatter', color='y')
+​
+# The graphs reveal that irrespective of proximtiy to river, no. rooms have positive impact on value
+<seaborn.axisgrid.FacetGrid at 0x26f2a83ea60>
+
+z
+​
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train, y_train)
+​
+LinearRegression()
+LinearRegression()
+coef = model.coef_
+​
+print('Coefficients: \n', coef)
+Coefficients: 
+ [ 8.44687291 -0.27571156]
+By running this code, we can generate specific values (in this case, coefficient - or slope of curve - for the explanatory variable of no. rooms and crime rates/capita - rather than creating the full econometrics table as we saw above
+
+# Now, to forecast use function below
+​
+ypred = model.predict(X_test)
+​
+​
+# Now, say we want to compare the relative accuracy of this model with another
+# To do so, we need to compare MSEs
+# This means that we need to find an Rsquared in and out of sample, then calculate MSE according (In53)
+from sklearn.metrics import mean_squared_error, r2_score
+​
+print('R2 out-of-sample: ', round(r2_score(y_test, ypred),2))
+R2 out-of-sample:  0.52
+print('R2 in-sample: ', round(model.score(X_train, y_train),2))
+R2 in-sample:  0.54
+mse = mean_squared_error(y_test, ypred)
+print('MSE: ', mse)
+MSE:  35.627314244762744
+X = df[['rm', 'crim', 'indus', 'nox']]
+​
+y = df['medv']
+from sklearn.model_selection import train_test_split
+​
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state=42)
+model_2 = LinearRegression()
+model_2.fit(X_train, y_train)
+​
+ypred = model_2.predict(X_test)
+print('R2 out-of-sample: ', round(r2_score(y_test, ypred),2))
+R2 out-of-sample:  0.57
+print('R2 in-sample: ', round(model_2.score(X_train, y_train),2))
+R2 in-sample:  0.56
+mse2 = mean_squared_error(y_test, ypred)
+print('MSE: ', mse2)
+MSE:  32.07591550315419
+Now, we see that the MSE is lower once additional variables are factored in (model 2, vs model 1) and hence MSE is lower.
+
+# NOTE, MSE is useful to compare models. Rsquared is useful to compare goodness of fit in absolute terms - not for comparing
+# accuracy of one model RELATIVE to another.
