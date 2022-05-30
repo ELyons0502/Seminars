@@ -1,0 +1,153 @@
+Classification methods
+## Classifiers are used when we have binary variables (Yes, No). For this to be the case, our target variable is equivalent to
+## to a dummy variable
+## Our aim is to find the P that our target variable takes one of these values
+## We can't use linear regression for this, as on the y axis we will have a continuous variable (P), but on the x axis
+## This will be discrete. This is impossible. The line of best fit will show that there's a p=? that represents a value differen
+## to the target variable options
+import pandas as pd
+df = pd.read_csv('C:/Users/ELyons/Data/Default.csv')
+df.head(10)
+default	student	balance	income
+0	No	No	729.526495	44361.625070
+1	No	Yes	817.180407	12106.134700
+2	No	No	1073.549164	31767.138950
+3	No	No	529.250605	35704.493940
+4	No	No	785.655883	38463.495880
+5	No	Yes	919.588531	7491.558572
+6	No	No	825.513331	24905.226580
+7	No	Yes	808.667504	17600.451340
+8	No	No	1161.057854	37468.529290
+9	No	No	0.000000	29275.268290
+cleanup_nums = {"No":0, "Yes":1}
+df = df.replace(cleanup_nums)
+df.head(10)
+default	student	balance	income
+0	0	0	729.526495	44361.625070
+1	0	1	817.180407	12106.134700
+2	0	0	1073.549164	31767.138950
+3	0	0	529.250605	35704.493940
+4	0	0	785.655883	38463.495880
+5	0	1	919.588531	7491.558572
+6	0	0	825.513331	24905.226580
+7	0	1	808.667504	17600.451340
+8	0	0	1161.057854	37468.529290
+9	0	0	0.000000	29275.268290
+Here, we are making the categorical variables equivalent to numerical dummy variable
+
+Now we need predictors: - Balance (X) - Default (Y)
+
+X = df[['balance', 'income']]
+y = df['default']
+from sklearn.model_selection import train_test_split 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+The only difference here to what we have done previously is the incorporation of strat if y. This is keeping the proportion of yes/no's equal across test and train samples
+
+from sklearn.linear_model import LogisticRegression 
+​
+model = LogisticRegression(C=1e6, max_iter=1e5)
+model.fit(X_train, y_train)
+​
+LogisticRegression(C=1000000.0, max_iter=100000.0)
+coef = model.coef_
+​
+print('Coefficients: \n', model.coef_)
+Coefficients: 
+ [[ 0.00043062 -0.0001276 ]]
+# This shows that balance size increase P of default, whereas income reduces it 
+# The classification method is used to estimate the the propensity for the model to predict acurate results 
+# Type 1 error refers to false positive (pred positive, actual negaitve) ~ e.g., assign someone who doesn't default to default
+# Type 2 predicts false negative (pred negative, actual classification positive) ~ e.g., assing someone who defaults to no default
+ROC and AUC
+READ NOTES ON ROC AND AUC FOR NEXT SECTION Essentially, it measures the propensity of classifier to produce type 1 vs type 2 error Assuming we want more of one than the other (consider Covid, type 1 > Type 2) We can then set parameter of classifier to try and increase proportion of type 1
+
+## First, create test vs train sample as per usual
+​
+from sklearn.model_selection import train_test_split 
+​
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.5, stratify=y )
+print(X_train)
+          balance       income
+9475  1295.613346  39717.73601
+5236   776.639070  15338.88860
+2503   932.952369  35858.18915
+2088   268.879491  48006.15004
+5631   445.661898  46816.10511
+...           ...          ...
+5030   568.352004  38963.95924
+5575   950.341275  64396.16534
+3523  1650.896019  43478.12821
+3064  1185.028651  33298.50040
+9998  1569.009053  36669.11236
+
+[5000 rows x 2 columns]
+## Now, let's plot model to assess accuracy
+​
+from sklearn.linear_model import LogisticRegression 
+​
+model = LogisticRegression(C=1e6, max_iter=1e5)
+model.fit(X_train, y_train)
+yhat = model.predict(X_test)
+print(y_test[y_test==1]) # Here, we are testing the number of times that binary value is 1 in test sample (length)
+8410    1
+3913    1
+6520    1
+4308    1
+3162    1
+       ..
+1780    1
+1487    1
+3156    1
+2217    1
+2604    1
+Name: default, Length: 166, dtype: int64
+## Compare this with the actual number of times binary value was 1 was predicted using model (75)
+​
+print(len(yhat[yhat==1]))
+75
+# Now, if we wanted to create a 'confusion matrix', as to show no. true positives, true negative, false positives, false neg
+​
+from sklearn import metrics 
+print(metrics.confusion_matrix(y_test, yhat))
+[[4816   18]
+ [ 109   57]]
+Here, we can see that 4816 are true negatives, 18 false negatives; 109 true positives; 57 false positives.
+
+# Now, say we only wanted to generate default = 0 (NB 0 = no default) (i.e, increase the number of false negatives)
+ns_probs = [0 for _ in range(len(y_test))] ## this is called a no skilled trainer) - we need this for visualisation
+lr_probs = model.predict_proba(X_test)[:,1] # this is the predicted porobabilities from the logistic regression ln17
+print(len(lr_probs))
+5000
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+import matplotlib.pyplot as plt
+​
+#Visualisation of the curves
+ns_fpr, ns_tpr,_ = roc_curve(y_test, ns_probs)
+lr_fpr, lr_tpr,_ = roc_curve(y_test, lr_probs)
+​
+# Plot the roc curve
+plt.plot(ns_fpr,ns_tpr, linestyle='--', label='No Skill')
+plt.plot(lr_fpr,lr_tpr, marker='.', label='Logistic')
+​
+# Axis
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+​
+plt.legend()
+​
+plt.show()
+
+# This shows a very good log reg, as the curve is v close to 1 - the closer to 1, the better
+# To calculate the strenght numerically:
+​
+ns_auc = roc_auc_score(y_test, ns_probs)
+lr_auc = roc_auc_score(y_test, lr_probs)
+​
+print('No skill: ROC AUC=%.2f' % (ns_auc))
+print('Logistic: ROC AUC=%.2f' % (lr_auc)) # NB the =%.2f refewrs to decimal places
+No skill: ROC AUC=0.50
+Logistic: ROC AUC=0.95
+The 0.95 shows that our log reg predicts a positive 95% of the time as a proportion of actual times (i.e., true positive rate = 95%) ~ inversely, also means the same for true negative too
+
+Remember, the optimal AUC is 1
